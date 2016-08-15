@@ -14,15 +14,15 @@ class UserDetails(models.Model):
 
 class Questions(models.Model):
     question=models.TextField(unique=True);
-    option1=models.CharField(max_length=100);
-    option2=models.CharField(max_length=100);
-    option3=models.CharField(max_length=100);
-    option4=models.CharField(max_length=100);
-    answer=models.CharField(max_length=100);
-    links=models.CharField(max_length=255);
-    pic_url=models.CharField(max_length=255);
-    extra=models.CharField(max_length=255);
-    genre=models.CharField(max_length=100);
+    option1=models.CharField(max_length=100,blank=True,null=True)
+    option2=models.CharField(max_length=100,blank=True,null=True)
+    option3=models.CharField(max_length=100,blank=True,null=True)
+    option4=models.CharField(max_length=100,blank=True,null=True)
+    answer=models.CharField(max_length=100)
+    links=models.CharField(max_length=255,null=True)
+    pic_url=models.CharField(max_length=255,null=True)
+    extra=models.CharField(max_length=255,blank=True,null=True)
+    genre=models.CharField(max_length=100,null=True)
 
 class Feedback(models.Model):
     user=models.ForeignKey(UserDetails,on_delete=models.CASCADE)
