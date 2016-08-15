@@ -8,43 +8,55 @@ from models import UserDetails
 from pprint import pprint
 import sys
 # Create your views here.
-MY_ID=str(1179980365395638) 
+MY_ID='1179980365395638'
+ACCESS_TOKEN='EAAPssNxnMjABAOVVxXjgWdPPGGopWHf5k6DynsJGsAuONwAJqZBnRtNlOWTZApiGpAtaNaqqNXgjaG2kkY9MJ9gbefbo8FPAoXwwdJfdCQXM0blTNzW7L1sUGfYxHGAhKiZAmXXYaYLyWf8fch5XNrJRBWYpDyXd1Tdn8qWWgZDZD'
+MESSAGE_POST_URL='https://graph.facebook.com/v2.6/me/messages?access_token={0}'.format(ACCESS_TOKEN)
+
 class QuizView(generic.View):
+    ''' The generic view for the quiz app'''
+
     def get(self,request,*args,**kwargs):
+        'Get request handler - Required to verify the webhook'
+
         if self.request.GET['hub.verify_token']=='9990074416':
             return HttpResponse(self.request.GET['hub.challenge'])
         else:
             return HttpResponse("Error,Invalid Token")
+
 
     #override dispatch to handle post request without csrf        
     @method_decorator(csrf_exempt)
     def dispatch(self,request,*args,**kwargs):
         return generic.View.dispatch(self,request,*args,**kwargs)
 
-    def post(self,request,*arg,**kwargs):
-        incoming_message=json.loads(self.request.body.decode('utf-8'))
-        
-        for entry in incoming_message['entry']:
-            for message in entry['messaging']:
-                if 'message' in message:
 
-                    if message['sender']['id'] != MY_ID :
-                        pprint (entry)
-                        fbid=message['sender']['id']
-                        if 'quick_reply' in message["message"]:
-                            if message["message"]["text"]==message["message"]["quick_reply"]["payload"]:
-                                post_message(fbid,'yeah !! its correct')
+
+    def post(self,request,*arg,**kwargs):
+        ''' Handling post requests '''
+        incoming_message=json.loads(self.request.body.decode('utf-8'))        
+        try:
+            #refer to facebook api to know what's going on
+            for entry in incoming_message['entry']:
+                for message in entry['messaging']:
+                    if 'message' in message:
+                        if message['sender']['id'] != MY_ID :               # sometimes facebook echos back sent messages,to avoid that
+                            #pprint (entry)
+                            fbid=message['sender']['id']
+                            if 'quick_reply' in message["message"]:
+                                got_answer=message["message"]["text"]
+                                correct_answer=message["message"]["quick_reply"]["payload"]
+                                if got_answer==correct_answer:
+                                    post_message(fbid,"correct")
+                                else:
+                                    post_message(fbid,"incorrect",message=message)
                             else:
-                                post_message(fbid,"incorrect answer !! correct answer is " + message["message"]["quick_reply"]["payload"])
-                        else:
-                            
-                                #post_message(message['sender']['id'],message['message']['text'])
-                                send_quick_reply(message['sender']['id'])
-                if 'quick_reply' in message:
-                    print ("message sent is -- ", )
-                    pprint ( message)
-            
-        return HttpResponse()
+                                route(fbid,message['message']['text'])
+                                    #post_message(message['sender']['id'],message['message']['text'])
+                                    #send_quick_reply(message['sender']['id'])
+        except :
+            print ("Error Occured ",sys.exc_info() )
+        finally:
+            return HttpResponse(status=200)
 
 def post_message(fbid,recieved_msg):
     post_url='https://graph.facebook.com/v2.6/me/messages?access_token=EAAPssNxnMjABAOVVxXjgWdPPGGopWHf5k6DynsJGsAuONwAJqZBnRtNlOWTZApiGpAtaNaqqNXgjaG2kkY9MJ9gbefbo8FPAoXwwdJfdCQXM0blTNzW7L1sUGfYxHGAhKiZAmXXYaYLyWf8fch5XNrJRBWYpDyXd1Tdn8qWWgZDZD' 
@@ -87,7 +99,11 @@ def send_quick_reply(fbid):
     except:
         print ("Error Occured ",sys.exc_info()  )
 
+
+
 def create_question(title,options,answer):
+    ''' Creates a question and returns dictionary in required format'''
+
     message={}
     message['text']=title
     quickreplies=[]
