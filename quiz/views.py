@@ -11,8 +11,8 @@ from models import Questions
 import sys
 
 # Create your views here.
-MY_ID='1179980365395638'
-ACCESS_TOKEN='EAAPssNxnMjABAOVVxXjgWdPPGGopWHf5k6DynsJGsAuONwAJqZBnRtNlOWTZApiGpAtaNaqqNXgjaG2kkY9MJ9gbefbo8FPAoXwwdJfdCQXM0blTNzW7L1sUGfYxHGAhKiZAmXXYaYLyWf8fch5XNrJRBWYpDyXd1Tdn8qWWgZDZD'
+MY_ID='<id_here> '
+ACCESS_TOKEN='<token_here>'
 MESSAGE_POST_URL='https://graph.facebook.com/v2.6/me/messages?access_token={0}'.format(ACCESS_TOKEN)
 
 class QuizView(generic.View):
@@ -21,7 +21,7 @@ class QuizView(generic.View):
     def get(self,request,*args,**kwargs):
         'Get request handler - Required to verify the webhook'
 
-        if self.request.GET['hub.verify_token']=='9990074416':
+        if self.request.GET['hub.verify_token']=='<verify_token>':
             return HttpResponse(self.request.GET['hub.challenge'])
         else:
             return HttpResponse("Error,Invalid Token")
